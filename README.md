@@ -1,8 +1,20 @@
-# React with Bun runtime
+# Setup Wizard for Sourcegraph Machine Images
+
+A tool that allows users to set up their Sourcegraph instance from UI when launching from a machine image.
+
+## Getting Started
 
 This is a React project bootstrapped with [bun](https://bun.sh/).
 
-## Getting Started
+### Install `bun`
+
+```bash
+sudo apt install unzip
+curl -fsSL https://bun.sh/install | bash
+# or
+brew tap oven-sh/bun
+brew install bun
+```
 
 ### Cloning the repo
 
@@ -21,6 +33,12 @@ bun dev
 Open http://localhost:3000 with your browser to see the result.
 
 You can start editing the page by modifying src/App.jsx. The page auto-updates as you edit the file.
+
+### Build
+
+```
+bun run build
+```
 
 ## Learn More
 

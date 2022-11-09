@@ -1,4 +1,7 @@
 body {
+  background-color: #0f111a;
+  color: #798baf;
+  padding: 5%;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -10,4 +13,75 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.homepage {
+  border-radius: 3%;
+  position: relative;
+  background-color: #1d212f;
+  text-align: center;
+  padding: 5%;
+  padding-bottom: 30%;
+  height: 80%;
+}
+
+.loading {
+  margin: 10%;
+}
+
+.logo-big {
+  width: 30%;
+}
+
+.logo-small {
+  width: 50px;
+  animation: App-logo-spin infinite 20s linear;
+  margin-bottom: 1%;
+}
+
+.settings {
+  /* color: #fff; */
+  margin-top: 10%;
+}
+
+.form {
+  width: 100%;
+}
+
+.input {
+  background-color: #1d212f;
+  color: #fff;
+  border: 1px solid;
+  border-color: #798baf;
+  border-radius: 5px;
+  width: 20%;
+  padding: 3px;
+}
+
+.file > input {
+  background-color: #1d212f;
+  color: #fff;
+  border: 1px solid;
+  border-color: #798baf;
+  border-radius: 5px;
+  width: 20%;
+  padding: 3px;
+}
+
+.btn {
+  min-width: 10%;
+  right: 1rem;
+  position: absolute;
+  bottom: 1rem;
+  background-color: #798baf;
+  color: #1d212f;
+  font-weight: bold;
+  border: none;
+  padding: 1%;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.m-5 {
+  margin: 5%;
 }
