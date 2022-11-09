@@ -1,6 +1,9 @@
 # Setup Wizard for Sourcegraph Machine Images
 
-A tool that allows users to set up their Sourcegraph instance from UI when launching from a machine image.
+A start up screen that allows users to set up their Sourcegraph instance from UI when launching from a machine image.
+
+![image](https://user-images.githubusercontent.com/68532117/200934098-0fe8b851-e6ae-4c5e-bd32-06216526ff3b.png)
+
 
 ## Getting Started
 
