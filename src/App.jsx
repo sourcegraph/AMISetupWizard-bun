@@ -48,13 +48,39 @@ function App() {
         setUploadStatus('FAILED');
       }
     }
-  }, [blob]);
+  }, [blob, fileName, headers, hostname]);
 
   const onFileChange = useCallback(async (file) => {
     const getFileName = await file.name;
     setFileName(getFileName);
     reader.readAsText(file, 'UTF-8');
   });
+
+  function redirectTimer(tries) {
+    if (tries > 0) {
+      tries--;
+      const postRequest = {
+        method: 'POST',
+        header: headers,
+        body: JSON.stringify({ label: null }),
+      };
+      // SET CORS
+      setTimeout(() => {
+        fetch(`http://${hostname}:80`, postRequest)
+          .then((res) => {
+            if (res.status === 404) {
+              console.log('retrying in 5 second');
+              redirectTimer(tries);
+            } else {
+              window.location.replace(`http://${hostname}:80`);
+            }
+          })
+          .catch((error) => console.error('Failed to connect to host', error));
+      }, '5000');
+    } else {
+      throw new Error('Cannot connect to host.');
+    }
+  }
 
   const onLaunchClick = useCallback(() => {
     const requestBody = {
@@ -72,9 +98,7 @@ function App() {
         .then((res) => console.log(res.message, res.status));
       setSubmitted(!showErrors);
       if (!showErrors) {
-        setTimeout(() => {
-          window.location.replace(`http://${hostname}:80`);
-        }, '50000');
+        redirectTimer(20);
       }
     } catch (error) {
       setShowErrors(error);

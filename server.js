@@ -1,4 +1,4 @@
-import { file, serve, spawnSync } from 'bun';
+import { file, serve, spawn } from 'bun';
 import { copyFileSync } from 'fs';
 serve({
   port: 30080,
@@ -8,10 +8,6 @@ serve({
     const uri = new URL(req.url);
     const pathname = uri.pathname.substring(1);
     const fileName = uri.searchParams.get('file');
-    const install = (mode) => {
-      console.log('Running launch script');
-      return spawnSync(['bash', `$HOME/deploy/scripts/${mode}.sh`]);
-    };
     const copyOverrideFile = (size) => {
       console.log('Copying override file');
       if (size !== 'XS') {
@@ -27,6 +23,7 @@ serve({
     if (pathname === '') {
       return new Response(file('build/index.html'));
     }
+
     if (pathname.startsWith('src')) {
       return new Response(file(pathname));
     }
@@ -50,8 +47,13 @@ serve({
     if (pathname === '.api/new') {
       const size = uri.searchParams.get('size');
       copyOverrideFile(size);
-      install('new');
-      return new Response(`Echo: DONE`);
+      console.log('Running launch script');
+      const { stdout } = spawn([
+        'bash',
+        '/home/sourcegraph/SetupWizard/scripts/new.sh',
+      ]);
+      const text = await new Response(stdout).text();
+      return text;
     }
 
     return new Response(file('build/' + pathname));
