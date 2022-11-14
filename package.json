@@ -1,6 +1,10 @@
 {
   "name": "setupwizard",
-  "version": "0.1.61",
+  "author": {
+    "name": "Beatrix",
+    "url": "https://github.com/abeatrix"
+  },
+  "version": "0.0.1",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

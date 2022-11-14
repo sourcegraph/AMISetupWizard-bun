@@ -2,6 +2,11 @@ import { useCallback, useState, useEffect } from 'react';
 import './App.css';
 import logo from './logo.svg';
 
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+};
+
 function App() {
   const [hostname, setHostname] = useState(null);
   const [size, setSize] = useState('XS');
@@ -15,11 +20,6 @@ function App() {
   const reader = new FileReader();
   reader.onloadstart = () => setUploadStatus('LOADING');
   reader.onload = (event) => setBlob(event.target.result);
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
 
   useEffect(() => {
     if (!hostname) {
@@ -48,13 +48,16 @@ function App() {
         setUploadStatus('FAILED');
       }
     }
-  }, [blob]);
+  }, [blob, fileName, hostname]);
 
-  const onFileChange = useCallback(async (file) => {
-    const getFileName = await file.name;
-    setFileName(getFileName);
-    reader.readAsText(file, 'UTF-8');
-  });
+  const onFileChange = useCallback(
+    async (file) => {
+      const getFileName = await file.name;
+      setFileName(getFileName);
+      reader.readAsText(file, 'UTF-8');
+    },
+    [reader]
+  );
 
   const onLaunchClick = useCallback(() => {
     const requestBody = {
@@ -66,32 +69,54 @@ function App() {
       header: headers,
       body: JSON.stringify(requestBody),
     };
+    function checkFrontend(tries) {
+      if (tries > 0) {
+        tries--;
+        setTimeout(() => {
+          fetch(`http://${hostname}:30080/.api/check`)
+            .then((res) => res.json())
+            .then((res) => {
+              if (res === 'Ready') {
+                fetch(`http://${hostname}:30080/.api/remove`)
+                  .then((res) => res.json())
+                  .catch((error) => console.log(error));
+                window.location.replace(`http://${hostname}:80`);
+              } else {
+                checkFrontend(tries);
+              }
+            })
+            .catch((error) => console.log(error));
+        }, '10000');
+      }
+    }
+
     try {
       fetch(`http://${hostname}:30080/.api/${mode}?size=${size}`, postRequest)
-        .then(async (res) => await res.json())
-        .then((res) => console.log(res.message, res.status));
+        .then(async (res) => await res)
+        .then((res) => {
+          if (res.status && !showErrors) {
+            checkFrontend(20);
+          }
+        })
+        .catch((error) => console.log(error));
       setSubmitted(!showErrors);
-      if (!showErrors) {
-        setTimeout(() => {
-          window.location.replace(`http://${hostname}:80`);
-        }, '50000');
-      }
     } catch (error) {
       setShowErrors(error);
       setSubmitted(false);
     }
-  });
+  }, [hostname, mode, showErrors, size, version]);
 
   return (
     <div className="homepage" role="main">
       <img
+        alt="sourcegraph logo"
         src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
         className="logo-big"
       />
       <h1>Sourcegraph Image Instance Setup Wizard</h1>
       {submitted ? (
         <div className="loading">
-          <img src={logo} className="logo-small" alt="logo" />
+          <img src={logo} className="logo-small" alt="sourcegraph logo" />
           <h4>Almost there... Spinning up a Sourcegraph Image Instance...</h4>
         </div>
       ) : (
@@ -120,7 +145,7 @@ function App() {
                 type="text"
                 onChange={(e) => setVersion(e.target.value)}
                 className="input"
-                placeholder="4.1.0"
+                placeholder="eg: 4.1.2"
               />
             </label>
           ) : (

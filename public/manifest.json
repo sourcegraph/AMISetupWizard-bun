@@ -1,8 +1,8 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Sourcegraph Setup Wizard",
+  "name": "Sourcegraph Setup Wizard",
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#798baf",
+  "background_color": "#0f111a"
 }
