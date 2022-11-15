@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import './App.css';
 import logo from './logo.svg';
 
@@ -17,7 +17,7 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
   const [showErrors, setShowErrors] = useState(null);
-  const reader = new FileReader();
+  const reader = useMemo(() => new FileReader(), []);
   reader.onloadstart = () => setUploadStatus('LOADING');
   reader.onload = (event) => setBlob(event.target.result);
 
@@ -71,22 +71,24 @@ function App() {
     };
     function checkFrontend(tries) {
       if (tries > 0) {
-        tries--;
-        setTimeout(() => {
-          fetch(`http://${hostname}:30080/.api/check`)
-            .then((res) => res.json())
-            .then((res) => {
-              if (res === 'Ready') {
-                fetch(`http://${hostname}:30080/.api/remove`)
-                  .then((res) => res.json())
-                  .catch((error) => console.log(error));
-                window.location.replace(`http://${hostname}:80`);
-              } else {
+        fetch(`http://${hostname}:30080/.api/check`)
+          .then((res) => res.json())
+          .then((res) => {
+            if (res === 'Ready') {
+              fetch(`http://${hostname}:30080/.api/remove`)
+                .then((res) => res.json())
+                .catch((error) => console.log(error));
+              setTimeout(() => {
+                window.location.replace(`http://${hostname}/site-admin/init`);
+              }, '5000');
+            } else {
+              setTimeout(() => {
+                tries--;
                 checkFrontend(tries);
-              }
-            })
-            .catch((error) => console.log(error));
-        }, '10000');
+              }, '10000');
+            }
+          })
+          .catch((error) => console.log(error));
       }
     }
 

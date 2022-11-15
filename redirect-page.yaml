@@ -1,0 +1,175 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-errors
+  labels:
+    app.kubernetes.io/name: nginx-errors
+    deploy: sourcegraph
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-errors
+      app.kubernetes.io/part-of: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx-errors
+        app.kubernetes.io/part-of: ingress-nginx
+    spec:
+      containers:
+      - name: nginx-error-server
+        image: registry.k8s.io/ingress-nginx/nginx-errors:v20220916-gd32f8c343@sha256:09c421ac743bace19ab77979b82186941c5125c95e62cdb40bdf41293b5c275c
+        ports:
+        - containerPort: 8080
+        # Setting the environment variable DEBUG we can see the headers sent 
+        # by the ingress controller to the backend in the client response.
+        env:
+        - name: DEBUG
+          value: "true"
+        # Mounting custom error page from configMap
+        volumeMounts:
+        - name: custom-error-pages
+          mountPath: /www
+        resources:
+          limits:
+            cpu: "10m"
+            memory: "50Mi"
+          requests:
+            cpu: "10m"
+            memory: "50Mi"
+      # Mounting custom error page from configMap
+      volumes:
+      - name: custom-error-pages
+        configMap:
+          name: custom-error-pages
+          items:
+          - key: "404"
+            path: "404.html"
+          - key: "503"
+            path: "503.html"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-errors
+  labels:
+    deploy: sourcegraph
+    app.kubernetes.io/name: nginx-errors
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  selector:
+    app.kubernetes.io/name: nginx-errors
+    app.kubernetes.io/part-of: ingress-nginx
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-error-pages
+  labels:
+    deploy: sourcegraph
+data:
+  404: |
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Sourcegraph Setup Wizard</title>
+        <link rel="icon" href="https://about.sourcegraph.com/sourcegraph-mark.png"/>
+        <meta charset="utf-8" />
+        <meta name="robots" content="noindex" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body {
+            background-color: #0f111a;
+            color: #798baf;
+            padding: 5%;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+              'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+              'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+          .homepage {
+            border-radius: 3%;
+            position: relative;
+            background-color: #1d212f;
+            text-align: center;
+            padding: 5%;
+            padding-bottom: 30%;
+            height: 80%;
+          }
+          .logo-big {
+            width: 30%;
+          }
+          .settings {
+            margin-top: 10%;
+          }
+          .btn {
+            min-width: 10%;
+            right: 1rem;
+            position: absolute;
+            bottom: 1rem;
+            background-color: #798baf;
+            color: #1d212f;
+            font-weight: bold;
+            border: none;
+            padding: 1%;
+            border-radius: 5px;
+            margin: 5px;
+          }
+          .m-5 {
+            margin: 5%;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="homepage" role="main">
+          <img
+            src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
+            class="logo-big"
+          />
+          <h1>Sourcegraph Image Instance Setup Wizard</h1>
+          <div class="settings">
+            <h3 class="subtitle">
+              Let's start with some simple configurations while your instance is
+              being set up in the background!
+            </h3>
+            <div class="m-5">
+              <a href="#" onclick="javascript:window.location.port=30080">
+                <button class="btn">NEXT: CONFIGURATIONS</button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  503: |
+    <!DOCTYPE html>
+    <html>
+      <head><title>CUSTOM SERVICE UNAVAILABLE</title></head>
+      <body>CUSTOM SERVICE UNAVAILABLE</body>
+    </html>
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-errors
+  annotations:
+      kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-errors
+                port:
+                  name: http
