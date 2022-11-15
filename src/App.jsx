@@ -17,6 +17,7 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
   const [showErrors, setShowErrors] = useState(null);
+  const [loading, setLoading] = useState(false);
   const reader = useMemo(() => new FileReader(), []);
   reader.onloadstart = () => setUploadStatus('LOADING');
   reader.onload = (event) => setBlob(event.target.result);
@@ -65,6 +66,7 @@ function App() {
   );
 
   const onLaunchClick = useCallback(() => {
+    setLoading(true);
     const requestBody = {
       size: size,
       version: version,
@@ -104,13 +106,13 @@ function App() {
       )
         .then((res) => res.json())
         .then((res) => {
-          if (res === 'Passed' && !showErrors) {
-            checkFrontend(20);
-            setSubmitted(true);
-          } else {
+          checkFrontend(20);
+          setSubmitted(true);
+          if (res === 'Failed') {
             setShowErrors(res);
             setSubmitted(false);
           }
+          setLoading(false);
         })
         .catch((error) => setShowErrors(error));
     } catch (error) {
@@ -160,7 +162,7 @@ function App() {
                 type="text"
                 onChange={(e) => setVersion(e.target.value)}
                 className="input"
-                placeholder="eg: 4.1.2"
+                placeholder="eg: 4.1.3"
               />
             </label>
           ) : (
@@ -201,6 +203,7 @@ function App() {
               className="btn-next"
               type="button"
               value="LAUNCH"
+              disable={loading}
               onClick={() => onLaunchClick()}
             />
           </div>

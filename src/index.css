@@ -82,6 +82,7 @@ code {
   padding: 1%;
   border-radius: 5px;
   margin: 5px;
+  cursor: pointer;
 }
 
 .btn-prev {
@@ -96,6 +97,7 @@ code {
   padding: 1%;
   border-radius: 5px;
   margin: 5px;
+  cursor: pointer;
 }
 
 .m-5 {

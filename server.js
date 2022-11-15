@@ -55,7 +55,6 @@ serve({
         }
         const wrote = await writer.end();
         return Response.json('Uploaded', { status: 200 }, { body: wrote });
-        // return Response.json({ wrote, type: req.headers.get('Content-Type') });
       } catch (error) {
         console.error(error);
         return new Response(`message: FAILED`);
@@ -72,7 +71,7 @@ serve({
         '/home/sourcegraph/SetupWizard/scripts/launch.sh',
       ]);
       const response = await new Response(stdout).text();
-      if (response === 'Done\n') {
+      if (response) {
         return Response.json('Passed', { status: 200 });
       }
       return Response.json('Failed', { status: 404 });
@@ -90,7 +89,7 @@ serve({
         '/home/sourcegraph/SetupWizard/scripts/upgrade.sh',
       ]);
       const response = await new Response(stdout).text();
-      if (response === 'Done\n') {
+      if (response.startsWith('Done')) {
         return Response.json('Passed', { status: 200 });
       }
       return Response.json(
@@ -109,8 +108,8 @@ serve({
           ['bash', '/home/sourcegraph/SetupWizard/scripts/frontend.sh'],
           { stdout: 'pipe' }
         );
-        const text = await new Response(stdout).text();
-        if (text === 'Ready\n') {
+        const response = await new Response(stdout).text();
+        if (response.startsWith('Ready')) {
           return Response.json('Ready', { status: 200 });
         }
         return Response.json('Not-Ready', { status: 200 });
@@ -126,8 +125,8 @@ serve({
             ['bash', '/home/sourcegraph/SetupWizard/scripts/remove.sh'],
             { stdout: 'pipe' }
           );
-          const text = await new Response(stdout).text();
-          if (text === 'Removed\n') {
+          const response = await new Response(stdout).text();
+          if (response.startsWith('Removed')) {
             return Response.json('Removed', { status: 200 });
           }
           return Response.json('Not-Removed', { status: 200 });

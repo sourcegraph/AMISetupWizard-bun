@@ -2,4 +2,4 @@
 ###############################################################################
 # Serve the Sourcegraph Setup Wizard server
 ###############################################################################
-cd /home/sourcegraph/SetupWizard && bun run server.js &
+cd /home/sourcegraph/SetupWizard && /home/sourcegraph/.bun/bin/bun run server.js &

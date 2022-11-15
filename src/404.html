@@ -51,6 +51,7 @@
         padding: 1%;
         border-radius: 5px;
         margin: 5px;
+        cursor: pointer;
       }
       .m-5 {
         margin: 5%;
@@ -70,7 +71,10 @@
           being set up in the background!
         </h3>
         <div class="m-5">
-          <a href="#" onclick="javascript:window.location.port=30080">
+          <a
+            href="#"
+            onclick="javascript:window.location.protocol='http';window.location.port=30080"
+          >
             <button class="btn">NEXT: Configuration</button>
           </a>
         </div>
