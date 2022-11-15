@@ -98,6 +98,10 @@ data:
               'Helvetica Neue', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
           }
           .homepage {
             border-radius: 3%;
@@ -105,16 +109,15 @@ data:
             background-color: #1d212f;
             text-align: center;
             padding: 5%;
+            width: 1200px;
+            max-height: 600px;
           }
           .logo-big {
             width: 30%;
           }
           .settings {
-            margin-left: 35%;
-            margin-right: 35%;
-            margin-top: 5%;
+            margin-top: 10%;
             margin-bottom: 5%;
-            max-width: 30%;
             height: 500px;
           }
           .btn {
@@ -133,6 +136,9 @@ data:
           }
           .m-5 {
             margin: 5%;
+          }
+          .subtitle {
+            width: 100%;
           }
         </style>
       </head>

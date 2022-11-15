@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect, useMemo } from 'react';
 import './App.css';
-import logo from './logo.svg';
 
 const headers = {
   'Content-Type': 'application/json',
@@ -119,96 +118,117 @@ function App() {
       setShowErrors(error);
       setSubmitted(false);
     }
-  }, [hostname, mode, showErrors, size, version]);
+  }, [hostname, mode, size, version]);
 
   return (
-    <div className="homepage" role="main">
-      <img
-        alt="sourcegraph logo"
-        src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
-        className="logo-big"
-      />
-      <h1>Sourcegraph Image Instance Setup Wizard</h1>
-      {submitted ? (
-        <div className="loading">
-          <img src={logo} className="logo-small" alt="sourcegraph logo" />
-          <h4>Almost there... Spinning up a Sourcegraph Image Instance...</h4>
-        </div>
-      ) : (
-        <div className="settings">
-          <label>
-            <h4 className="subtitle">Select your instance size*</h4>
-            <select onChange={(e) => setSize(e.target.value)} className="input">
-              <option value="XS">XS</option>
-              <option value="S">S</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
-            </select>
-          </label>
-          <label>
-            <h4 className="subtitle">Select instance launch mode*</h4>
-            <select onChange={(e) => setMode(e.target.value)} className="input">
-              <option value="new">New - Launch a new instance</option>
-              <option value="upgrade">
-                Upgrade - Upgrade existing instance
-              </option>
-            </select>
-          </label>
-          {mode === 'upgrade' ? (
-            <label>
-              <h4 className="subtitle">Enter the version number for upgrade</h4>
-              <input
-                type="text"
-                onChange={(e) => setVersion(e.target.value)}
-                className="input"
-                placeholder="eg: 4.1.3"
-              />
-            </label>
-          ) : (
-            <label className="file">
-              <h4 className="subtitle">
-                [OPTIONAL] Code host SSH file - id_rsa
-              </h4>
-              <h5 className="error">
-                {uploadStatus &&
-                  uploadStatus.id_rsa &&
-                  'Upload ' + uploadStatus.id_rsa}
-              </h5>
-              <input
-                className=""
-                name="id_rsa"
-                type="file"
-                onChange={(e) => onFileChange(e.target.files[0], e.target.name)}
-              />
-              <h4 className="subtitle">
-                [OPTIONAL] Code host SSH file - known_hosts
-              </h4>
-              <h5 className="error">
-                {uploadStatus &&
-                  uploadStatus.known_hosts &&
-                  'Upload ' + uploadStatus.known_hosts}
-              </h5>
-              <input
-                className=""
-                name="known_hosts"
-                type="file"
-                onChange={(e) => onFileChange(e.target.files[0], e.target.name)}
-              />
-            </label>
-          )}
-          {showErrors && <h5 className="error">ERROR: {showErrors}</h5>}
-          <div className="m-5">
-            <input
-              className="btn-next"
-              type="button"
-              value="LAUNCH"
-              disable={loading}
-              onClick={() => onLaunchClick()}
-            />
+    <div className="container" role="main">
+      <div className="homepage">
+        <img
+          alt="sourcegraph logo"
+          src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
+          className="logo-big"
+        />
+        <h1>Sourcegraph Image Instance Setup Wizard</h1>
+        {submitted ? (
+          <div className="loading">
+            <div className="settings">
+              <div class="loading-zone">
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+              </div>
+              <h4>Your instance is being set up...</h4>
+              <h5>You will be redirected to the login page automatically.</h5>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="settings">
+            <label>
+              <h4 className="subtitle">Select your instance size*</h4>
+              <select
+                onChange={(e) => setSize(e.target.value)}
+                className="input"
+              >
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+              </select>
+            </label>
+            <label>
+              <h4 className="subtitle">Select instance launch mode*</h4>
+              <select
+                onChange={(e) => setMode(e.target.value)}
+                className="input"
+              >
+                <option value="new">New - Launch a new instance</option>
+                <option value="upgrade">
+                  Upgrade - Upgrade existing instance
+                </option>
+              </select>
+            </label>
+            {mode === 'upgrade' ? (
+              <label>
+                <h4 className="subtitle">
+                  Enter the version number for upgrade
+                </h4>
+                <input
+                  type="text"
+                  onChange={(e) => setVersion(e.target.value)}
+                  className="input"
+                  placeholder="eg: 4.1.3"
+                />
+              </label>
+            ) : (
+              <label className="file">
+                <h4 className="subtitle">
+                  [OPTIONAL] Code host SSH file - id_rsa
+                </h4>
+                <h5 className="error">
+                  {uploadStatus &&
+                    uploadStatus.id_rsa &&
+                    'Upload ' + uploadStatus.id_rsa}
+                </h5>
+                <input
+                  className=""
+                  name="id_rsa"
+                  type="file"
+                  onChange={(e) =>
+                    onFileChange(e.target.files[0], e.target.name)
+                  }
+                />
+                <h4 className="subtitle">
+                  [OPTIONAL] Code host SSH file - known_hosts
+                </h4>
+                <h5 className="error">
+                  {uploadStatus &&
+                    uploadStatus.known_hosts &&
+                    'Upload ' + uploadStatus.known_hosts}
+                </h5>
+                <input
+                  className=""
+                  name="known_hosts"
+                  type="file"
+                  onChange={(e) =>
+                    onFileChange(e.target.files[0], e.target.name)
+                  }
+                />
+              </label>
+            )}
+            {showErrors && <h5 className="error">ERROR: {showErrors}</h5>}
+            <div className="m-5">
+              <input
+                className="btn-next"
+                type="button"
+                value="LAUNCH"
+                disabled={loading}
+                onClick={() => onLaunchClick()}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
