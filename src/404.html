@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sourcegraph Setup Wizard</title>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <link
+      rel="icon"
+      href="https://about.sourcegraph.com/sourcegraph-mark.png"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        background-color: #0f111a;
+        color: #798baf;
+        padding: 5%;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+          'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+          'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .homepage {
+        border-radius: 3%;
+        position: relative;
+        background-color: #1d212f;
+        text-align: center;
+        padding: 5%;
+      }
+      .logo-big {
+        width: 30%;
+      }
+      .settings {
+        margin-left: 35%;
+        margin-right: 35%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+        max-width: 30%;
+        height: 500px;
+      }
+      .btn {
+        min-width: 10%;
+        right: 1rem;
+        position: absolute;
+        bottom: 1rem;
+        background-color: #798baf;
+        color: #1d212f;
+        font-weight: bold;
+        border: none;
+        padding: 1%;
+        border-radius: 5px;
+        margin: 5px;
+      }
+      .m-5 {
+        margin: 5%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="homepage" role="main">
+      <img
+        src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
+        class="logo-big"
+      />
+      <h1>Sourcegraph Image Instance Setup Wizard</h1>
+      <div class="settings">
+        <h3 class="subtitle">
+          Let's start with some simple configurations while your instance is
+          being set up in the background!
+        </h3>
+        <div class="m-5">
+          <a href="#" onclick="javascript:window.location.port=30080">
+            <button class="btn">NEXT: Configuration</button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

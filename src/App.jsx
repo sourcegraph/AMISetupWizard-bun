@@ -20,7 +20,6 @@ function App() {
   const reader = useMemo(() => new FileReader(), []);
   reader.onloadstart = () => setUploadStatus('LOADING');
   reader.onload = (event) => setBlob(event.target.result);
-
   useEffect(() => {
     if (!hostname) {
       const uri = new URL(window.location.origin);
@@ -38,8 +37,8 @@ function App() {
           `http://${hostname}:30080/.api/upload?file=${fileName}`,
           postRequest
         )
-          .then(async (res) => await res.json())
-          .then((res) => setUploadStatus(res.message))
+          .then((res) => res.json())
+          .then((res) => setUploadStatus(res))
           .catch((error) => {
             throw error;
           });
@@ -51,10 +50,16 @@ function App() {
   }, [blob, fileName, hostname]);
 
   const onFileChange = useCallback(
-    async (file) => {
+    async (file, uploadName) => {
       const getFileName = await file.name;
-      setFileName(getFileName);
-      reader.readAsText(file, 'UTF-8');
+      if (uploadName !== getFileName) {
+        setUploadStatus({
+          [uploadName]: `Failed: file name must be ${uploadName}`,
+        });
+      } else {
+        setFileName(uploadName || getFileName);
+        reader.readAsText(file, 'UTF-8');
+      }
     },
     [reader]
   );
@@ -91,17 +96,23 @@ function App() {
           .catch((error) => console.log(error));
       }
     }
-
+    // Launch as new instance or upgrade
     try {
-      fetch(`http://${hostname}:30080/.api/${mode}?size=${size}`, postRequest)
-        .then(async (res) => await res)
+      fetch(
+        `http://${hostname}:30080/.api/${mode}?size=${size}&version=${version}`,
+        postRequest
+      )
+        .then((res) => res.json())
         .then((res) => {
-          if (res.status && !showErrors) {
+          if (res === 'Passed' && !showErrors) {
             checkFrontend(20);
+            setSubmitted(true);
+          } else {
+            setShowErrors(res);
+            setSubmitted(false);
           }
         })
-        .catch((error) => console.log(error));
-      setSubmitted(!showErrors);
+        .catch((error) => setShowErrors(error));
     } catch (error) {
       setShowErrors(error);
       setSubmitted(false);
@@ -124,7 +135,7 @@ function App() {
       ) : (
         <div className="settings">
           <label>
-            <h4 className="subtitle">What is your instance size?</h4>
+            <h4 className="subtitle">Select your instance size*</h4>
             <select onChange={(e) => setSize(e.target.value)} className="input">
               <option value="XS">XS</option>
               <option value="S">S</option>
@@ -134,10 +145,12 @@ function App() {
             </select>
           </label>
           <label>
-            <h4 className="subtitle">Select a launch mode</h4>
+            <h4 className="subtitle">Select instance launch mode*</h4>
             <select onChange={(e) => setMode(e.target.value)} className="input">
-              <option value="new">New instance</option>
-              <option value="upgrade">Perform upgrade</option>
+              <option value="new">New - Launch a new instance</option>
+              <option value="upgrade">
+                Upgrade - Upgrade existing instance
+              </option>
             </select>
           </label>
           {mode === 'upgrade' ? (
@@ -153,20 +166,39 @@ function App() {
           ) : (
             <label className="file">
               <h4 className="subtitle">
-                Code host SSH file {uploadStatus && 'Status: ' + uploadStatus}
+                [OPTIONAL] Code host SSH file - id_rsa
               </h4>
+              <h5 className="error">
+                {uploadStatus &&
+                  uploadStatus.id_rsa &&
+                  'Upload ' + uploadStatus.id_rsa}
+              </h5>
               <input
                 className=""
-                name="upload"
+                name="id_rsa"
                 type="file"
-                onChange={(e) => onFileChange(e.target.files[0])}
+                onChange={(e) => onFileChange(e.target.files[0], e.target.name)}
+              />
+              <h4 className="subtitle">
+                [OPTIONAL] Code host SSH file - known_hosts
+              </h4>
+              <h5 className="error">
+                {uploadStatus &&
+                  uploadStatus.known_hosts &&
+                  'Upload ' + uploadStatus.known_hosts}
+              </h5>
+              <input
+                className=""
+                name="known_hosts"
+                type="file"
+                onChange={(e) => onFileChange(e.target.files[0], e.target.name)}
               />
             </label>
           )}
-          {showErrors && <h5>Error: {showErrors}</h5>}
+          {showErrors && <h5 className="error">ERROR: {showErrors}</h5>}
           <div className="m-5">
             <input
-              className="btn"
+              className="btn-next"
               type="button"
               value="LAUNCH"
               onClick={() => onLaunchClick()}

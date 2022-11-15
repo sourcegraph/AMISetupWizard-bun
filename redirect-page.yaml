@@ -74,14 +74,18 @@ metadata:
   labels:
     deploy: sourcegraph
 data:
+  # From src/404.html
   404: |
     <!DOCTYPE html>
     <html>
       <head>
         <title>Sourcegraph Setup Wizard</title>
-        <link rel="icon" href="https://about.sourcegraph.com/sourcegraph-mark.png"/>
         <meta charset="utf-8" />
         <meta name="robots" content="noindex" />
+        <link
+          rel="icon"
+          href="https://about.sourcegraph.com/sourcegraph-mark.png"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
           body {
@@ -101,14 +105,17 @@ data:
             background-color: #1d212f;
             text-align: center;
             padding: 5%;
-            padding-bottom: 30%;
-            height: 80%;
           }
           .logo-big {
             width: 30%;
           }
           .settings {
-            margin-top: 10%;
+            margin-left: 35%;
+            margin-right: 35%;
+            margin-top: 5%;
+            margin-bottom: 5%;
+            max-width: 30%;
+            height: 500px;
           }
           .btn {
             min-width: 10%;
@@ -142,7 +149,7 @@ data:
             </h3>
             <div class="m-5">
               <a href="#" onclick="javascript:window.location.port=30080">
-                <button class="btn">NEXT: CONFIGURATIONS</button>
+                <button class="btn">NEXT: Configuration</button>
               </a>
             </div>
           </div>
@@ -152,8 +159,8 @@ data:
   503: |
     <!DOCTYPE html>
     <html>
-      <head><title>CUSTOM SERVICE UNAVAILABLE</title></head>
-      <body>CUSTOM SERVICE UNAVAILABLE</body>
+      <head><title>SOURCEGRAPH SETUP WIZARD: 503</title></head>
+      <body>SOURCEGRAPH SETUP WIZARD: SERVICE UNAVAILABLE</body>
     </html>
 ---
 apiVersion: networking.k8s.io/v1
