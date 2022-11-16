@@ -10,12 +10,10 @@ serve({
     const fileName = uri.searchParams.get('file');
     const copyOverrideFile = (size) => {
       console.log('Copying override file');
-      if (size !== 'XS') {
-        copyFileSync(
-          `$HOME/deploy/install/override.${size}.yaml`,
-          '$HOME/deploy/install/override.yaml'
-        );
-      }
+      copyFileSync(
+        `/home/sourcegraph/deploy/install/override.${size}.yaml`,
+        '/home/sourcegraph/deploy/install/override.yaml'
+      );
       return;
     };
 
@@ -29,7 +27,6 @@ serve({
       return new Response(file(pathname));
     }
 
-    // API routes
     // Upload files
     if (pathname === '.api/upload') {
       if (req.method === 'GET') {
@@ -47,17 +44,17 @@ serve({
             filePath = '/home/sourcegraph/.ssh/known_hosts';
             break;
           default:
-            filePath = '/home/sourcegraph/.sourcegraph/tmp/fileName';
+            throw new Error('Invalid');
         }
         const writer = file(filePath).writer();
         for await (const chunk of body) {
           writer.write(chunk);
         }
         const wrote = await writer.end();
-        return Response.json('Uploaded', { status: 200 }, { body: wrote });
+        return Response.json({ wrote, type: req.headers.get('Content-Type') });
       } catch (error) {
         console.error(error);
-        return new Response(`message: FAILED`);
+        return Response.json(`Failed to upload: ${error}`, { status: 404 });
       }
     }
 
@@ -72,7 +69,7 @@ serve({
       ]);
       const response = await new Response(stdout).text();
       if (response) {
-        return Response.json('Passed', { status: 200 });
+        return Response.json('Passed');
       }
       return Response.json('Failed', { status: 404 });
     }
@@ -90,14 +87,11 @@ serve({
       ]);
       const response = await new Response(stdout).text();
       if (response.startsWith('Done')) {
-        return Response.json('Passed', { status: 200 });
+        return Response.json('Passed');
       }
-      return Response.json(
-        'Upgrade Failed: New instance cannot perform upgrades',
-        {
-          status: 404,
-        }
-      );
+      return Response.json('Upgrade Failed: No upgrade for new instance', {
+        status: 404,
+      });
     }
 
     // Check if frontend is ready
@@ -110,9 +104,9 @@ serve({
         );
         const response = await new Response(stdout).text();
         if (response.startsWith('Ready')) {
-          return Response.json('Ready', { status: 200 });
+          return Response.json('Ready');
         }
-        return Response.json('Not-Ready', { status: 200 });
+        return Response.json('Retrying');
       }
     }
 
@@ -126,12 +120,11 @@ serve({
             { stdout: 'pipe' }
           );
           const response = await new Response(stdout).text();
-          if (response.startsWith('Removed')) {
-            return Response.json('Removed', { status: 200 });
+          if (response) {
+            return Response.json('Removed');
           }
-          return Response.json('Not-Removed', { status: 200 });
         } catch (error) {
-          return new Response('Failed', { status: 404 });
+          return new Response('Failed to remove', { status: 404 });
         }
       }
     }

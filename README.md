@@ -4,7 +4,6 @@ A start up screen that allows users to set up their Sourcegraph instance from UI
 
 ![image](https://user-images.githubusercontent.com/68532117/200934098-0fe8b851-e6ae-4c5e-bd32-06216526ff3b.png)
 
-
 ## Getting Started
 
 This is a React project bootstrapped with [bun](https://bun.sh/).
@@ -17,12 +16,6 @@ curl -fsSL https://bun.sh/install | bash
 # or
 brew tap oven-sh/bun
 brew install bun
-```
-
-### Cloning the repo
-
-```sh
-bun create react ./react-bun-app
 ```
 
 ### Development
@@ -41,6 +34,12 @@ You can start editing the page by modifying src/App.jsx. The page auto-updates a
 
 ```
 bun run build
+```
+
+### Serve
+
+```
+bun run server.js
 ```
 
 ## Learn More

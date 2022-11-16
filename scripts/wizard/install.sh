@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 ###############################################################################
 # Install and serve Sourcegraph Setup Wizard server
+# Ubuntu 22.04+ LTS required
 ###############################################################################
 cd || exit
 # Install Node.js
@@ -16,6 +17,6 @@ echo "export PATH=$BUN_INSTALL/bin:$PATH" | tee -a "$HOME/.bashrc"
 cd /home/sourcegraph/SetupWizard || exit
 # Build wizard
 bun install
-bun run build --silent &
+bun run build --silent
 sleep 5
-bun run server.js &
+exit

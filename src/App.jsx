@@ -1,10 +1,7 @@
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import './App.css';
-
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-};
+import { teardownWizard, makeRequest } from './helpers';
+import logo from './logo.svg';
 
 function App() {
   const [hostname, setHostname] = useState(null);
@@ -16,10 +13,6 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
   const [showErrors, setShowErrors] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const reader = useMemo(() => new FileReader(), []);
-  reader.onloadstart = () => setUploadStatus('LOADING');
-  reader.onload = (event) => setBlob(event.target.result);
   useEffect(() => {
     if (!hostname) {
       const uri = new URL(window.location.origin);
@@ -27,11 +20,7 @@ function App() {
     }
     if (blob && fileName) {
       setUploadStatus('UPLOADING');
-      const postRequest = {
-        method: 'POST',
-        header: headers,
-        body: blob,
-      };
+      const postRequest = makeRequest('POST', blob);
       try {
         fetch(
           `http://${hostname}:30080/.api/upload?file=${fileName}`,
@@ -44,49 +33,40 @@ function App() {
           });
       } catch (error) {
         setShowErrors(error);
-        setUploadStatus('FAILED');
+        setUploadStatus('Failed');
       }
     }
   }, [blob, fileName, hostname]);
 
-  const onFileChange = useCallback(
-    async (file, uploadName) => {
-      const getFileName = await file.name;
-      if (uploadName !== getFileName) {
-        setUploadStatus({
-          [uploadName]: `Failed: file name must be ${uploadName}`,
-        });
-      } else {
-        setFileName(uploadName || getFileName);
-        reader.readAsText(file, 'UTF-8');
-      }
-    },
-    [reader]
-  );
+  const onFileChange = useCallback(async (file, uploadName) => {
+    const reader = new FileReader();
+    reader.onloadstart = () => setUploadStatus('LOADING');
+    reader.onload = (event) => setBlob(event.target.result);
+    const getFileName = await file.name;
+    if (uploadName !== getFileName) {
+      setUploadStatus({
+        [uploadName]: `Failed: file name must be ${uploadName}`,
+      });
+    } else {
+      setFileName(uploadName || getFileName);
+      reader.readAsText(file, 'UTF-8');
+    }
+  }, []);
 
   const onLaunchClick = useCallback(() => {
-    setLoading(true);
+    setSubmitted(true);
     const requestBody = {
       size: size,
       version: version,
     };
-    const postRequest = {
-      method: 'POST',
-      header: headers,
-      body: JSON.stringify(requestBody),
-    };
+    const postRequest = makeRequest('POST', JSON.stringify(requestBody));
     function checkFrontend(tries) {
       if (tries > 0) {
         fetch(`http://${hostname}:30080/.api/check`)
           .then((res) => res.json())
           .then((res) => {
-            if (res === 'Ready') {
-              fetch(`http://${hostname}:30080/.api/remove`)
-                .then((res) => res.json())
-                .catch((error) => console.log(error));
-              setTimeout(() => {
-                window.location.replace(`http://${hostname}/site-admin/init`);
-              }, '5000');
+            if (res.startWith('Ready')) {
+              teardownWizard(hostname);
             } else {
               setTimeout(() => {
                 tries--;
@@ -107,13 +87,14 @@ function App() {
         .then((res) => {
           checkFrontend(20);
           setSubmitted(true);
-          if (res === 'Failed') {
+          if (res.startWith('Failed')) {
             setShowErrors(res);
             setSubmitted(false);
           }
-          setLoading(false);
         })
-        .catch((error) => setShowErrors(error));
+        .catch((error) => {
+          throw new Error(error);
+        });
     } catch (error) {
       setShowErrors(error);
       setSubmitted(false);
@@ -123,11 +104,7 @@ function App() {
   return (
     <div className="container" role="main">
       <div className="homepage">
-        <img
-          alt="sourcegraph logo"
-          src="https://sourcegraph.com/.assets/img/sourcegraph-logo-dark.svg"
-          className="logo-big"
-        />
+        <img alt="sourcegraph logo" src={logo} className="logo-big" />
         <h1>Sourcegraph Image Instance Setup Wizard</h1>
         {submitted ? (
           <div className="loading">
@@ -170,20 +147,18 @@ function App() {
             </label>
             {mode === 'upgrade' ? (
               <label>
-                <h4 className="subtitle">
-                  Enter the version number for upgrade
-                </h4>
+                <h4 className="subtitle">Enter a version number for upgrade</h4>
                 <input
                   type="text"
                   onChange={(e) => setVersion(e.target.value)}
                   className="input"
-                  placeholder="eg: 4.1.3"
+                  placeholder="Example: 4.1.3"
                 />
               </label>
             ) : (
               <label className="file">
                 <h4 className="subtitle">
-                  [OPTIONAL] Code host SSH file - id_rsa
+                  Optional: Code host SSH file - id_rsa
                 </h4>
                 <h5 className="error">
                   {uploadStatus &&
@@ -199,7 +174,7 @@ function App() {
                   }
                 />
                 <h4 className="subtitle">
-                  [OPTIONAL] Code host SSH file - known_hosts
+                  Optional: Code host SSH file - known_hosts
                 </h4>
                 <h5 className="error">
                   {uploadStatus &&
@@ -222,7 +197,7 @@ function App() {
                 className="btn-next"
                 type="button"
                 value="LAUNCH"
-                disabled={loading}
+                disabled={submitted}
                 onClick={() => onLaunchClick()}
               />
             </div>

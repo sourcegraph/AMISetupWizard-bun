@@ -11,7 +11,6 @@ if /usr/local/bin/k3s kubectl get deploy/sourcegraph-frontend | grep -q 2/2; the
     /usr/local/bin/k3s kubectl delete service/nginx-errors
     /usr/local/bin/k3s kubectl delete configmap/custom-error-pages
     echo "Removed"
-    exit 0
 fi
-echo "Failed to remove Sourcegraph Setup Wizard server"
-exit 1
+sudo rm -rf /home/sourcegraph/SetupWizard
+exit 0
