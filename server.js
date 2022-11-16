@@ -1,5 +1,6 @@
 import { file, serve, spawn, write } from 'bun';
 import { copyFileSync } from 'fs';
+
 serve({
   port: 30080,
   hostname: 'localhost',
@@ -18,7 +19,7 @@ serve({
     };
 
     // If the URL is empty, display homepage (the index file).
-    if (pathname === '') {
+    if (pathname === '' || pathname === 'setup' || pathname === 'wizard') {
       return new Response(file('build/index.html'));
     }
 
@@ -30,7 +31,7 @@ serve({
     // Upload files
     if (pathname === '.api/upload') {
       if (req.method === 'GET') {
-        return new Response(`Not a valid request method.`);
+        return new Response(`Not a valid request method.`, { status: 404 });
       }
       try {
         // body is a ReadableStream
@@ -51,7 +52,11 @@ serve({
           writer.write(chunk);
         }
         const wrote = await writer.end();
-        return Response.json({ wrote, type: req.headers.get('Content-Type') });
+        return Response.json({
+          wrote,
+          type: req.headers.get('Content-Type'),
+          body: 'Uploaded successfully',
+        });
       } catch (error) {
         console.error(error);
         return Response.json(`Failed to upload: ${error}`, { status: 404 });
@@ -69,7 +74,7 @@ serve({
       ]);
       const response = await new Response(stdout).text();
       if (response) {
-        return Response.json('Passed');
+        return Response.json('Passed', { status: 200 });
       }
       return Response.json('Failed', { status: 404 });
     }
@@ -87,7 +92,7 @@ serve({
       ]);
       const response = await new Response(stdout).text();
       if (response.startsWith('Done')) {
-        return Response.json('Passed');
+        return Response.json('Passed', { status: 200 });
       }
       return Response.json('Upgrade Failed: No upgrade for new instance', {
         status: 404,
@@ -104,7 +109,7 @@ serve({
         );
         const response = await new Response(stdout).text();
         if (response.startsWith('Ready')) {
-          return Response.json('Ready');
+          return Response.json('Ready', { status: 200 });
         }
         return Response.json('Retrying');
       }
@@ -121,7 +126,7 @@ serve({
           );
           const response = await new Response(stdout).text();
           if (response) {
-            return Response.json('Removed');
+            return Response.json('Removed', { status: 200 });
           }
         } catch (error) {
           return new Response('Failed to remove', { status: 404 });

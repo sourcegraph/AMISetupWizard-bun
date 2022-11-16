@@ -19,7 +19,9 @@ function App() {
       setHostname(uri.hostname);
     }
     if (blob && fileName) {
-      setUploadStatus('UPLOADING');
+      setUploadStatus({
+        [fileName]: 'Uploading',
+      });
       const postRequest = makeRequest('POST', blob);
       try {
         fetch(
@@ -27,20 +29,30 @@ function App() {
           postRequest
         )
           .then((res) => res.json())
-          .then((res) => setUploadStatus(res))
+          .then((res) => {
+            console.log(res);
+            setUploadStatus({
+              [fileName]: res.body,
+            });
+          })
           .catch((error) => {
             throw error;
           });
       } catch (error) {
         setShowErrors(error);
-        setUploadStatus('Failed');
+        setUploadStatus({
+          [fileName]: 'Failed',
+        });
       }
     }
   }, [blob, fileName, hostname]);
 
   const onFileChange = useCallback(async (file, uploadName) => {
     const reader = new FileReader();
-    reader.onloadstart = () => setUploadStatus('LOADING');
+    reader.onloadstart = () =>
+      setUploadStatus({
+        [uploadName]: 'loading',
+      });
     reader.onload = (event) => setBlob(event.target.result);
     const getFileName = await file.name;
     if (uploadName !== getFileName) {
@@ -65,7 +77,7 @@ function App() {
         fetch(`http://${hostname}:30080/.api/check`)
           .then((res) => res.json())
           .then((res) => {
-            if (res.startWith('Ready')) {
+            if (res === 'Ready') {
               teardownWizard(hostname);
             } else {
               setTimeout(() => {
@@ -74,8 +86,13 @@ function App() {
               }, '10000');
             }
           })
-          .catch((error) => console.log(error));
+          .catch((error) => {
+            throw error;
+          });
       }
+      throw new Error(
+        'Instance set up timeout. Please contact our support for further assistance.'
+      );
     }
     // Launch as new instance or upgrade
     try {
@@ -96,8 +113,8 @@ function App() {
           throw new Error(error);
         });
     } catch (error) {
-      setShowErrors(error);
       setSubmitted(false);
+      setShowErrors(error);
     }
   }, [hostname, mode, size, version]);
 
@@ -163,7 +180,7 @@ function App() {
                 <h5 className="error">
                   {uploadStatus &&
                     uploadStatus.id_rsa &&
-                    'Upload ' + uploadStatus.id_rsa}
+                    'Status: ' + uploadStatus.id_rsa}
                 </h5>
                 <input
                   className=""
@@ -179,7 +196,7 @@ function App() {
                 <h5 className="error">
                   {uploadStatus &&
                     uploadStatus.known_hosts &&
-                    'Upload ' + uploadStatus.known_hosts}
+                    'Status: ' + uploadStatus.known_hosts}
                 </h5>
                 <input
                   className=""
