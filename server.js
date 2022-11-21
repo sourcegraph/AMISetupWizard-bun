@@ -67,6 +67,7 @@ serve({
     if (pathname === '.api/new') {
       const size = uri.searchParams.get('size') || 'XS';
       copyOverrideFile(size);
+      await write('/home/sourcegraph/.sourcegraph-size', size);
       console.log('Running launch script');
       const { stdout } = spawn([
         'bash',
@@ -83,6 +84,7 @@ serve({
     if (pathname === '.api/upgrade') {
       const size = uri.searchParams.get('size') || 'XS';
       const version = uri.searchParams.get('version') || '';
+      await write('/home/sourcegraph/.sourcegraph-size', size);
       await write('/home/sourcegraph/.sourcegraph-version-new', version);
       copyOverrideFile(size);
       console.log('Running upgrade script for size ', size);
