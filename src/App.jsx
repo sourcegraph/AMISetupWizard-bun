@@ -65,58 +65,63 @@ function App() {
     }
   }, []);
 
-  const onLaunchClick = useCallback(() => {
-    setSubmitted(true);
-    const requestBody = {
-      size: size,
-      version: version,
-    };
-    const postRequest = makeRequest('POST', JSON.stringify(requestBody));
-    function checkFrontend(tries) {
-      if (tries > 0) {
-        fetch(`http://${hostname}:30080/.api/check`)
+  const onLaunchClick = useCallback(
+    (e) => {
+      e.preventDefault();
+      setSubmitted(true);
+      const requestBody = {
+        size: size,
+        version: version,
+      };
+      const postRequest = makeRequest('POST', JSON.stringify(requestBody));
+      function checkFrontend(tries) {
+        if (tries > 0) {
+          fetch(`http://${hostname}:30080/.api/check`)
+            .then((res) => res.json())
+            .then((res) => {
+              if (res === 'Ready') {
+                teardownWizard(hostname);
+              } else {
+                setTimeout(() => {
+                  tries--;
+                  checkFrontend(tries);
+                }, '10000');
+              }
+            })
+            .catch((error) => {
+              throw error;
+            });
+        }
+        throw new Error(
+          'Instance set up timeout. Please contact our support for further assistance.'
+        );
+      }
+      // Launch as new instance or upgrade
+      try {
+        fetch(
+          `http://${hostname}:30080/.api/${mode}?size=${size}&version=${version}`,
+          postRequest
+        )
           .then((res) => res.json())
           .then((res) => {
-            if (res === 'Ready') {
-              teardownWizard(hostname);
-            } else {
-              setTimeout(() => {
-                tries--;
-                checkFrontend(tries);
-              }, '10000');
+            checkFrontend(20);
+            setSubmitted(true);
+            const responseText = res.toString();
+            if (responseText.startWith('Failed')) {
+              setShowErrors(res);
+              setSubmitted(false);
             }
           })
           .catch((error) => {
-            throw error;
+            throw new Error(error);
           });
+      } catch (error) {
+        setSubmitted(false);
+        setShowErrors(error);
       }
-      throw new Error(
-        'Instance set up timeout. Please contact our support for further assistance.'
-      );
-    }
-    // Launch as new instance or upgrade
-    try {
-      fetch(
-        `http://${hostname}:30080/.api/${mode}?size=${size}&version=${version}`,
-        postRequest
-      )
-        .then((res) => res.json())
-        .then((res) => {
-          checkFrontend(20);
-          setSubmitted(true);
-          if (res.startWith('Failed')) {
-            setShowErrors(res);
-            setSubmitted(false);
-          }
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
-    } catch (error) {
-      setSubmitted(false);
-      setShowErrors(error);
-    }
-  }, [hostname, mode, size, version]);
+    },
+    [hostname, mode, size, version]
+  );
 
   return (
     <div className="container" role="main">
@@ -213,9 +218,9 @@ function App() {
               <input
                 className="btn-next"
                 type="button"
-                value="LAUNCH"
+                value={submitted ? 'LOADING' : 'LAUNCH'}
                 disabled={submitted}
-                onClick={() => onLaunchClick()}
+                onClick={(e) => onLaunchClick(e)}
               />
             </div>
           </div>
